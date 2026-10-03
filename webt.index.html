@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tabungan Hijau</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef8f1;
+    color:#173d26;
+    padding-bottom:80px
+}
+header{
+    background:linear-gradient(135deg,#087f3f,#18a558);
+    color:white;
+    padding:22px 18px;
+    text-align:center;
+    box-shadow:0 3px 12px #0002
+}
+header h1{margin:0;font-size:25px}
+header p{margin:7px 0 0;opacity:.9}
+
+.page{
+    display:none;
+    max-width:900px;
+    margin:auto;
+    padding:18px
+}
+.page.active{display:block}
+
+.card{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:16px;
+    box-shadow:0 4px 15px #00000012
+}
+
+.saldo-card{
+    background:linear-gradient(135deg,#087f3f,#16a357);
+    color:white;
+    text-align:center
+}
+.saldo-card small{opacity:.9}
+.saldo{
+    font-size:35px;
+    font-weight:bold;
+    margin:8px 0
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px
+}
+.stat{
+    background:#f5fbf7;
+    border-radius:14px;
+    padding:15px;
+    text-align:center
+}
+.stat b{
+    display:block;
+    font-size:20px;
+    color:#087f3f;
+    margin-top:5px
+}
+
+h2{margin-top:0;color:#087f3f}
+
+input,select,textarea{
+    width:100%;
+    padding:13px;
+    border:2px solid #c9e4d1;
+    border-radius:10px;
+    font-size:16px;
+    margin-top:6px;
+    outline:none
+}
+input:focus,select:focus,textarea:focus{
+    border-color:#159447
+}
+label{
+    display:block;
+    margin-top:13px;
+    font-weight:bold
+}
+textarea{min-height:85px;resize:vertical}
+
+button{
+    border:0;
+    border-radius:10px;
+    padding:12px 17px;
+    font-weight:bold;
+    font-size:15px;
+    cursor:pointer
+}
+.btn-green{
+    background:#087f3f;
+    color:white;
+    width:100%;
+    margin-top:16px
+}
+.btn-light{
+    background:#e7f5eb;
+    color:#087f3f
+}
+.btn-red{
+    background:#ffe5e5;
+    color:#b00020
+}
+
+.target-number{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px
+}
+.progress{
+    height:18px;
+    background:#dceee1;
+    border-radius:20px;
+    overflow:hidden
+}
+.progress-bar{
+    height:100%;
+    width:0;
+    background:#18a558;
+    transition:.4s
+}
+
+canvas{
+    width:100%;
+    height:250px;
+    display:block
+}
+
+table{
+    width:100%;
+    border-collapse:collapse
+}
+th{
+    background:#087f3f;
+    color:white;
+    padding:11px;
+    text-align:left
+}
+td{
+    padding:10px;
+    border-bottom:1px solid #dceee1
+}
+tr:nth-child(even){background:#f7fcf8}
+
+.table-wrap{overflow-x:auto}
+
+.ai{
+    background:linear-gradient(135deg,#f0fff4,#e3f7e9);
+    border:2px solid #bde1c8
+}
+.ai-title{
+    font-size:20px;
+    font-weight:bold;
+    color:#087f3f
+}
+.ai-message{
+    line-height:1.6;
+    white-space:pre-line
+}
+
+.search{
+    margin-bottom:15px
+}
+
+.empty{
+    text-align:center;
+    padding:25px;
+    color:#71917b
+}
+
+/* NAVIGASI */
+.nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:white;
+    border-top:1px solid #d6e9dc;
+    display:flex;
+    justify-content:center;
+    z-index:20;
+    box-shadow:0 -3px 12px #0001
+}
+.nav button{
+    background:white;
+    color:#64806d;
+    width:33.33%;
+    max-width:180px;
+    padding:12px 5px
+}
+.nav button.active{
+    color:#087f3f;
+    font-weight:bold
+}
+.nav-icon{
+    display:block;
+    font-size:21px;
+    margin-bottom:3px
+}
+
+/* SERTIFIKAT */
+.certificate{
+    border:5px double #087f3f;
+    padding:35px 20px;
+    text-align:center;
+    background:white;
+    margin-top:20px
+}
+.certificate h1{
+    color:#087f3f;
+    letter-spacing:2px
+}
+.certificate .big{
+    font-size:38px;
+    font-weight:bold;
+    color:#087f3f
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap
+}
+
+/* MOBILE */
+@media(max-width:600px){
+    .stats{grid-template-columns:1fr}
+    .saldo{font-size:29px}
+    th,td{font-size:13px}
+}
+
+/* PRINT */
+@media print{
+    body{background:white;padding:0}
+    header,.nav,.no-print{display:none!important}
+    .page{display:none!important}
+    #page-home{display:block!important}
+    .hide-print{display:none!important}
+    .certificate{
+        display:block!important;
+        min-height:650px;
+        margin:0;
+        padding:70px 30px
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌿 TABUNGAN HIJAU</h1>
+    <p>Kelola tabunganmu dengan lebih mudah</p>
+</header>
+
+<!-- ================= BERANDA ================= -->
+<section id="page-home" class="page active">
+
+    <div class="card saldo-card">
+        <small>TOTAL SALDO</small>
+        <div class="saldo" id="saldoHome">Rp0</div>
+        <small id="motivasi">Mulai menabung hari ini 💚</small>
+    </div>
+
+    <div class="stats card">
+        <div class="stat">
+            Transaksi
+            <b id="jumlahTransaksi">0</b>
+        </div>
+        <div class="stat">
+            Setoran Terakhir
+            <b id="setoranTerakhir">Rp0</b>
+        </div>
+        <div class="stat">
+            Rata-rata
+            <b id="rataRata">Rp0</b>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📈 Grafik Tabungan</h2>
+        <canvas id="grafik"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>🎯 Target Tabungan</h2>
+
+        <label>Target</label>
+        <input type="number" id="targetInput"
+               placeholder="Contoh: 100000">
+
+        <button class="btn-green" onclick="simpanTarget()">
+            Simpan Target
+        </button>
+
+        <br><br>
+
+        <div class="target-number">
+            <span id="targetProgressText">Rp0 / Rp0</span>
+            <b id="targetPercent">0%</b>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="card ai">
+        <div class="ai-title">🤖 AI Tabungan</div>
+        <p class="ai-message" id="aiMessage">
+            Belum ada cukup data untuk dianalisis.
+        </p>
+    </div>
+
+    <!-- Sertifikat untuk print -->
+    <div class="certificate">
+        <p>🌿</p>
+        <h1>SERTIFIKAT TABUNGAN</h1>
+        <p>Dokumen pencatatan tabungan pribadi</p>
+
+        <hr>
+
+        <p>Total tabungan saat ini:</p>
+
+        <div class="big" id="saldoPrint">Rp0</div>
+
+        <br>
+        <p>Teruslah menabung untuk mencapai tujuanmu.</p>
+
+        <br><br>
+
+        <p id="tanggalPrint"></p>
+    </div>
+
+    <div class="card no-print">
+        <button class="btn-light" onclick="window.print()">
+            🖨️ Cetak Sertifikat
+        </button>
+    </div>
+
+</section>
+
+
+<!-- ================= TAMBAH ================= -->
+<section id="page-tambah" class="page">
+
+    <div class="card">
+        <h2>➕ Tambah Saldo</h2>
+
+        <label>Nominal</label>
+        <input type="number" id="nominal"
+               placeholder="Contoh: 1000" min="1">
+
+        <label>Tanggal</label>
+        <input type="date" id="tanggal">
+
+        <label>Jam</label>
+        <input type="time" id="jam">
+
+        <label>Kategori</label>
+        <select id="kategori">
+            <option>Uang Saku</option>
+            <option>Hadiah</option>
+            <option>Kerja</option>
+            <option>Penjualan</option>
+            <option>Lainnya</option>
+        </select>
+
+        <label>Catatan</label>
+        <textarea id="catatan"
+            placeholder="Contoh: Menabung dari uang jajan"></textarea>
+
+        <button class="btn-green" onclick="tambahSaldo()">
+            💰 Simpan Tabungan
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>💡 Tips Menabung</h2>
+        <p>• Sisihkan uang sebelum digunakan.</p>
+        <p>• Tentukan target yang jelas.</p>
+        <p>• Catat setiap kali menabung.</p>
+        <p>• Jangan mudah mengambil uang tabungan.</p>
+    </div>
+
+</section>
+
+
+<!-- ================= HISTORY ================= -->
+<section id="page-history" class="page">
+
+    <div class="card">
+        <h2>📜 History Tabungan</h2>
+
+        <input class="search" id="search"
+               oninput="tampilkanHistory()"
+               placeholder="🔍 Cari catatan/kategori...">
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Nominal</th>
+                        <th>Kategori</th>
+                        <th>Catatan</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ Fitur</h2>
+
+        <div class="actions">
+            <button class="btn-light" onclick="exportData()">
+                📤 Export Data
+            </button>
+
+            <button class="btn-light" onclick="importData()">
+                📥 Import Data
+            </button>
+
+            <button class="btn-red" onclick="hapusSemua()">
+                🗑️ Hapus Semua
+            </button>
+        </div>
+
+        <input type="file" id="fileInput"
+               accept=".json"
+               style="display:none"
+               onchange="prosesImport(event)">
+    </div>
+
+    <div class="card ai">
+        <div class="ai-title">🤖 Analisis AI</div>
+        <p class="ai-message" id="aiHistory">
+            Analisis akan muncul setelah ada transaksi.
+        </p>
+    </div>
+
+</section>
+
+
+<!-- NAVIGASI -->
+<nav class="nav">
+    <button class="active" onclick="bukaHalaman('home',this)">
+        <span class="nav-icon">🏠</span>
+        Beranda
+    </button>
+
+    <button onclick="bukaHalaman('tambah',this)">
+        <span class="nav-icon">➕</span>
+        Tambah
+    </button>
+
+    <button onclick="bukaHalaman('history',this)">
+        <span class="nav-icon">📜</span>
+        History
+    </button>
+</nav>
+
+
+<script>
+
+/* ================= DATA ================= */
+
+let transaksi =
+    JSON.parse(localStorage.getItem("tabunganData")) || [];
+
+let target =
+    Number(localStorage.getItem("tabunganTarget")) || 0;
+
+
+/* ================= FORMAT ================= */
+
+function rupiah(angka){
+    return new Intl.NumberFormat("id-ID",{
+        style:"currency",
+        currency:"IDR",
+        minimumFractionDigits:0
+    }).format(angka);
+}
+
+function tanggalIndo(tgl){
+    if(!tgl) return "-";
+
+    return new Date(tgl+"T00:00:00")
+        .toLocaleDateString("id-ID",{
+            day:"2-digit",
+            month:"short",
+            year:"numeric"
+        });
+}
+
+function simpanData(){
+    localStorage.setItem(
+        "tabunganData",
+        JSON.stringify(transaksi)
+    );
+}
+
+
+/* ================= NAVIGASI ================= */
+
+function bukaHalaman(nama,tombol){
+
+    document.querySelectorAll(".page")
+        .forEach(p=>p.classList.remove("active"));
+
+    document.getElementById("page-"+nama)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav button")
+        .forEach(b=>b.classList.remove("active"));
+
+    tombol.classList.add("active");
+
+    if(nama==="home"){
+        updateHome();
+    }
+
+    if(nama==="history"){
+        tampilkanHistory();
+    }
+
+    window.scrollTo(0,0);
+}
+
+
+/* ================= TAMBAH ================= */
+
+function tambahSaldo(){
+
+    let nominal =
+        Number(document.getElementById("nominal").value);
+
+    let tanggal =
+        document.getElementById("tanggal").value;
+
+    let jam =
+        document.getElementById("jam").value;
+
+    let kategori =
+        document.getElementById("kategori").value;
+
+    let catatan =
+        document.getElementById("catatan").value.trim();
+
+    if(!nominal || nominal<=0){
+        alert("Masukkan nominal tabungan!");
+        return;
+    }
+
+    if(!tanggal){
+        tanggal=new Date().toISOString().split("T")[0];
+    }
+
+    if(!jam){
+        let now=new Date();
+        jam=
+            String(now.getHours()).padStart(2,"0")
+            +":"+
+            String(now.getMinutes()).padStart(2,"0");
+    }
+
+    if(!catatan){
+        catatan="Menabung";
+    }
+
+    transaksi.push({
+        id:Date.now(),
+        nominal,
+        tanggal,
+        jam,
+        kategori,
+        catatan
+    });
+
+    simpanData();
+
+    document.getElementById("nominal").value="";
+    document.getElementById("catatan").value="";
+
+    updateSemua();
+
+    alert(
+        "Berhasil menambahkan "+rupiah(nominal)
+        +" ke tabungan! 💚"
+    );
+
+    // kembali ke beranda
+    document.querySelectorAll(".page")
+        .forEach(p=>p.classList.remove("active"));
+
+    document.getElementById("page-home")
+        .classList.add("active");
+
+    document.querySelectorAll(".nav button")
+        .forEach(b=>b.classList.remove("active"));
+
+    document.querySelector(".nav button")
+        .classList.add("active");
+
+    window.scrollTo(0,0);
+}
+
+
+/* ================= TOTAL ================= */
+
+function totalSaldo(){
+
+    return transaksi.reduce(
+        (total,item)=>total+Number(item.nominal),0
+    );
+}
+
+
+/* ================= HOME ================= */
+
+function updateHome(){
+
+    let total=totalSaldo();
+
+    document.getElementById("saldoHome")
+        .textContent=rupiah(total);
+
+    document.getElementById("saldoPrint")
+        .textContent=rupiah(total);
+
+    document.getElementById("jumlahTransaksi")
+        .textContent=transaksi.length;
+
+    let terakhir =
+        transaksi.length
+        ? transaksi[transaksi.length-1].nominal
+        : 0;
+
+    document.getElementById("setoranTerakhir")
+        .textContent=rupiah(terakhir);
+
+    let rata =
+        transaksi.length
+        ? total/transaksi.length
+        : 0;
+
+    document.getElementById("rataRata")
+        .textContent=rupiah(Math.round(rata));
+
+    updateTarget();
+    buatGrafik();
+    jalankanAI();
+
+    document.getElementById("tanggalPrint")
+        .textContent=
+        "Dicetak pada "+
+        new Date().toLocaleDateString("id-ID",{
+            day:"2-digit",
+            month:"long",
+            year:"numeric"
+        });
+}
+
+
+/* ================= TARGET ================= */
+
+function simpanTarget(){
+
+    let nilai =
+        Number(document.getElementById("targetInput").value);
+
+    if(!nilai || nilai<=0){
+        alert("Masukkan target yang benar!");
+        return;
+    }
+
+    target=nilai;
+
+    localStorage.setItem(
+        "tabunganTarget",
+        target
+    );
+
+    updateTarget();
+
+    alert("Target berhasil disimpan! 🎯");
+}
+
+function updateTarget(){
+
+    document.getElementById("targetInput").value=
+        target || "";
+
+    let total=totalSaldo();
+
+    let persen =
+        target>0
+        ? Math.min((total/target)*100,100)
+        : 0;
+
+    document.getElementById("progressBar")
+        .style.width=persen+"%";
+
+    document.getElementById("targetPercent")
+        .textContent=Math.round(persen)+"%";
+
+    document.getElementById("targetProgressText")
+        .textContent=
+        rupiah(total)+" / "+rupiah(target);
+}
+
+
+/* ================= GRAFIK ================= */
+
+function buatGrafik(){
+
+    let canvas=document.getElementById("grafik");
+    let ctx=canvas.getContext("2d");
+
+    let width=canvas.clientWidth;
+    let height=250;
+
+    let ratio=window.devicePixelRatio||1;
+
+    canvas.width=width*ratio;
+    canvas.height=height*ratio;
+
+    ctx.scale(ratio,ratio);
+
+    ctx.clearRect(0,0,width,height);
+
+    if(transaksi.length===0){
+
+        ctx.fillStyle="#71917b";
+        ctx.font="16px Arial";
+        ctx.textAlign="center";
+
+        ctx.fillText(
+            "Belum ada data tabungan",
+            width/2,
+            height/2
+        );
+
+        return;
+    }
+
+    let data=[];
+    let total=0;
+
+    transaksi.forEach(item=>{
+        total+=Number(item.nominal);
+
+        data.push({
+            tanggal:item.tanggal,
+            total
+        });
+    });
+
+    let max=
+        Math.max(...data.map(x=>x.total));
+
+    max=Math.max(max,1);
+
+    let pad=35;
+
+    ctx.strokeStyle="#cce4d3";
+    ctx.lineWidth=1;
+
+    for(let i=0;i<4;i++){
+
+        let y=
+            pad+
+            ((height-pad*2)/3)*i;
+
+        ctx.beginPath();
+        ctx.moveTo(pad,y);
+        ctx.lineTo(width-pad,y);
+        ctx.stroke();
+    }
+
+    ctx.beginPath();
+
+    data.forEach((item,i)=>{
+
+        let x=
+            pad+
+            (i/(Math.max(data.length-1,1)))
+            *(width-pad*2);
+
+        let y=
+            height-pad-
+            (item.total/max)
+            *(height-pad*2);
+
+        if(i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+    });
+
+    ctx.strokeStyle="#087f3f";
+    ctx.lineWidth=3;
+    ctx.stroke();
+
+    data.forEach((item,i)=>{
+
+        let x=
+            pad+
+            (i/(Math.max(data.length-1,1)))
+            *(width-pad*2);
+
+        let y=
+            height-pad-
+            (item.total/max)
+            *(height-pad*2);
+
+        ctx.beginPath();
+        ctx.arc(x,y,5,0,Math.PI*2);
+
+        ctx.fillStyle="#18a558";
+        ctx.fill();
+
+    });
+}
+
+
+/* ================= AI LOKAL ================= */
+
+function jalankanAI(){
+
+    let el=document.getElementById("aiMessage");
+
+    if(transaksi.length===0){
+
+        el.textContent=
+            "Belum ada transaksi.\n"+
+            "Tambahkan tabungan pertama kamu agar saya bisa menganalisisnya.";
+        return;
+    }
+
+    let total=totalSaldo();
+
+    let rata=
+        total/transaksi.length;
+
+    let terbesar=
+        Math.max(...transaksi.map(x=>x.nominal));
+
+    let terakhir=
+        transaksi[transaksi.length-1];
+
+    let teks=
+        "💰 Total tabungan: "+rupiah(total)+"\n"+
+        "📊 Jumlah transaksi: "+transaksi.length+"\n"+
+        "💵 Rata-rata setoran: "+rupiah(Math.round(rata))+"\n"+
+        "🔥 Setoran terbesar: "+rupiah(terbesar)+"\n";
+
+    if(target>0){
+
+        let kurang=
+            Math.max(target-total,0);
+
+        if(kurang===0){
+
+            teks+=
+                "🎉 Target tabunganmu sudah tercapai!";
+
+        }else{
+
+            teks+=
+                "🎯 Kamu membutuhkan "+
+                rupiah(kurang)+
+                " lagi untuk mencapai target.";
+
+            if(rata>0){
+
+                let perkiraan=
+                    Math.ceil(kurang/rata);
+
+                teks+=
+                    "\n🤖 Jika rata-rata setoranmu tetap "+
+                    rupiah(Math.round(rata))+
+                    ", dibutuhkan sekitar "+
+                    perkiraan+
+                    " kali setoran lagi.";
+            }
+        }
+    }
+
+    if(terakhir){
+
+        teks+=
+            "\n\n💡 Saran: tetap catat setiap pemasukan "+
+            "agar perkembangan tabunganmu mudah dipantau.";
+    }
+
+    el.textContent=teks;
+}
+
+
+/* ================= HISTORY ================= */
+
+function tampilkanHistory(){
+
+    let body=
+        document.getElementById("historyBody");
+
+    let cari=
+        document.getElementById("search")
+        .value.toLowerCase();
+
+    let hasil=transaksi.filter(item=>
+        item.catatan.toLowerCase().includes(cari)
+        ||
+        item.kategori.toLowerCase().includes(cari)
+        ||
+        String(item.nominal).includes(cari)
+    );
+
+    if(hasil.length===0){
+
+        body.innerHTML=
+            `<tr>
+                <td colspan="6" class="empty">
+                    Belum ada transaksi
+                </td>
+            </tr>`;
+
+    }else{
+
+        body.innerHTML=
+            hasil.map((item,index)=>`
+
+            <tr>
+                <td>${index+1}</td>
+
+                <td>
+                    ${tanggalIndo(item.tanggal)}
+                    <br>
+                    <small>${item.jam}</small>
+                </td>
+
+                <td>
+                    <b style="color:#087f3f">
+                    +${rupiah(item.nominal)}
+                    </b>
+                </td>
+
+                <td>${escapeHTML(item.kategori)}</td>
+
+                <td>${escapeHTML(item.catatan)}</td>
+
+                <td>
+                    <button
+                    class="btn-red"
+                    onclick="hapusTransaksi(${item.id})">
+                    ✕
+                    </button>
+                </td>
+            </tr>
+
+            `).join("");
+    }
+
+    analisisHistory();
+}
+
+
+/* ================= HAPUS ================= */
+
+function hapusTransaksi(id){
+
+  
